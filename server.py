@@ -393,9 +393,21 @@ def normalize_to_canonical(role: str, source_cfg: dict):
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
+    def _send_cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._send_cors_headers()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def _send_json(self, code: int, payload: dict):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
+        self._send_cors_headers()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -403,6 +415,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _send_bytes(self, code: int, data: bytes, content_type: str):
         self.send_response(code)
+        self._send_cors_headers()
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()

@@ -214,8 +214,11 @@
     </section>
   </main>
   <script>
-    const SPEC_LIST_URL = "/feature-specs";
-    const SERIES_META_URL = "/series-meta";
+    const API_BASE = window.location.protocol === "file:"
+      ? "https://data-service-mvp.onrender.com"
+      : "";
+    const SPEC_LIST_URL = API_BASE + "/feature-specs";
+    const SERIES_META_URL = API_BASE + "/series-meta";
     const THEME_ORG = "org-acme";
     let baseSpec = null;          // loaded from file
     let draft = null;             // mutable UI state
@@ -230,7 +233,7 @@
     }
 
     async function loadTheme() {
-      const r = await fetch("/themes/" + encodeURIComponent(THEME_ORG));
+      const r = await fetch(API_BASE + "/themes/" + encodeURIComponent(THEME_ORG));
       if (!r.ok) return;
       const t = await r.json();
       const tok = t.tokens || {};
@@ -436,7 +439,7 @@
           setPreviewStatus(`로딩: 다중 시계열 빌드 요청 중… (${draft.mCodes.length}개)`);
         }
 
-        const br = await fetch("/build-feature", {
+        const br = await fetch(API_BASE + "/build-feature", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: draft.userId || "full-access", spec: specToSend }),
@@ -616,7 +619,7 @@
       for (const f of files) {
         let label = f;
         try {
-          const rr = await fetch("/feature-specs/" + encodeURIComponent(f));
+          const rr = await fetch(API_BASE + "/feature-specs/" + encodeURIComponent(f));
           if (rr.ok) {
             const s = await rr.json();
             const title = (s && typeof s.title === "string") ? s.title.trim() : "";
@@ -637,7 +640,7 @@
     }
 
     async function loadSpecFile(fileName) {
-      const url = "/feature-specs/" + encodeURIComponent(fileName);
+      const url = API_BASE + "/feature-specs/" + encodeURIComponent(fileName);
       const r = await fetch(url);
       if (!r.ok) throw new Error("FeatureSpec 로드 실패: " + r.status);
       baseSpec = await r.json();
