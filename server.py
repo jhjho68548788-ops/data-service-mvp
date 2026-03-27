@@ -834,9 +834,9 @@ class Handler(BaseHTTPRequestHandler):
         self._send_json(200, runtime)
 
 
-def run(port: int = 8000):
+def run(port: int = int(os.environ.get("PORT", 8000))):
     app_path = os.path.join(STATIC_DIR, "app.html")
-    host = MVP_HOST
+    host = os.environ.get("MVP_HOST", "0.0.0.0")
     print(
         f"[mvp] pid={os.getpid()} build={MVP_BUILD_ID} listen={host}:{port}",
         file=sys.stderr,
