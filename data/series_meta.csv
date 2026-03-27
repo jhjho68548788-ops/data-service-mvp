@@ -1,0 +1,21 @@
+code,상세설명,영문명,데이터포인트_주기,발표_주기,스케일,단위
+ECOS.POLICY.RATE_BASE,한국은행 기준금리·통화정책 금리 수준(예시 메타),Policy base rate,M,월 1회(통화정책방향 발표일 기준),level,% p.a.
+ECOS.MACRO.CPI_YOY,소비자물가지수 전년동월 대비 증가율(예시),CPI year-on-year,M,월 1회(통계 발표일),rate,% y/y
+ECOS.MACRO.UNEMP,고용통계 기준 실업률(예시),Unemployment rate,M,월 1회,rate,%
+ECOS.FX.USD_KRW,원화 대비 미국 달러 환율(예시),USD/KRW exchange rate,D,영업일 매일(장중/종가 정의는 출처별),level,KRW/USD
+ECOS.TRADE.EXPORT_YOY,수출액 전년동월 대비 증가율(예시),Exports year-on-year,M,월 1회,rate,% y/y
+FRED.US.RATE_FF,미국 연방기금금리(예시),US federal funds rate,M,FOMC 및 데이터 개정 시,level,% p.a.
+FRED.US.CPI_YOY,미국 CPI 전년비(예시),US CPI year-on-year,M,월 1회,rate,% y/y
+WB.MACRO.GDP_KR,한국 명목/실질 GDP 시계열(예시·출처는 WB),Korea GDP,Q,분기 1회,level,USD bn (nominal 예시)
+WS.MKT.STEEL_HRC_IDX,열연강판 시장 가격 지수(예시·유료 벤더),Hot rolled coil price index,M,월 1회,index,idx (2015=100 예시)
+WS.MKT.REBAR_IDX,철근 가격 지수(예시),Rebar price index,M,월 1회,index,idx (2015=100 예시)
+WS.SUPPLY.CRUDE_STEEL,조강 생산량(예시),Crude steel production,M,월 1회,level,천t
+LME.COM.CU_SPOT,LME 구리 현물/결제가(예시),LME copper spot,D,영업일 매일,level,USD/t
+LME.COM.AL_SPOT,LME 알루미늄 현물/결제가(예시),LME aluminum spot,D,영업일 매일,level,USD/t
+SGX.IRON.ORE_62,철광석 62% 벤치마크 선물/지수(예시),Iron ore 62% benchmark,D,거래일,level,USD/dmt
+PLATTS.STEEL.HRC,플랫츠 HRC 평가가(예시),Platts HRC assessment,W,주 1회 이상,level,USD/t
+KIS.MKT.KOSPI,코스피 지수 종가(예시),KOSPI index,D,영업일 종가,index,pt
+KIS.MKT.KOSDAQ,코스닥 지수 종가(예시),KOSDAQ index,D,영업일 종가,index,pt
+BOK.FX.REAL_EFF,실질실효환율(예시),Real effective exchange rate,M,월 1회,index,idx (기준년=100 예시)
+MOIS.HOUSING.PRICE_IDX,전국 주택매매가격지수(예시),Housing sale price index,M,월 1회,index,idx (기준월=100 예시)
+KEPCO.ENERGY.POWER_DEMAND,전력 수요(예시),Electricity demand,D,일 1회,level,MWh

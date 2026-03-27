@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "userId": "public-only",
+      "allowedSourceIds": ["bank-ecos"],
+      "allowedFeatureIds": ["*"]
+    },
+    {
+      "userId": "full-access",
+      "allowedSourceIds": ["bank-ecos", "vendor-steel"],
+      "allowedFeatureIds": ["*"]
+    }
+  ]
+}

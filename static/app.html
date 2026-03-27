@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>데이터서비스 MVP — Preview 중심</title>
+  <style>
+    :root {
+      --primary: #1E66F5;
+      --bg: #F9FAFB;
+      --surface: #FFFFFF;
+      --text: #111827;
+      --muted: #6B7280;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid #E5E7EB;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    header h1 { margin: 0; font-size: 1rem; font-weight: 800; }
+    header .sub { color: var(--muted); font-size: 0.85rem; }
+    header .spacer { flex: 1; }
+    main { max-width: 1100px; margin: 0 auto; padding: 0.75rem; }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      margin-bottom: 1rem;
+    }
+    .preview {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .preview h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .preview .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    .config-block {
+      border: 1px solid #E5E7EB;
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 0.85rem 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+    .config-block h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      font-weight: 700;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* drawer/layout 스타일은 롤백(단일 화면)으로 제거 */
+
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    label { font-size: 0.875rem; color: var(--muted); }
+    select, button, input {
+      font: inherit;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #D1D5DB;
+      background: var(--surface);
+    }
+    select { min-width: 220px; max-width: 100%; }
+    select[multiple] { min-height: 160px; }
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      cursor: pointer;
+    }
+    button.ghost { background: transparent; cursor: pointer; }
+    button.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .card h3 { margin: 0 0 0.5rem; font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
+    .card .val { font-size: 1.35rem; font-weight: 700; color: var(--primary); }
+    pre.err {
+      background: #FEF2F2;
+      color: #991B1B;
+      padding: 1rem;
+      border-radius: var(--radius);
+      overflow: auto;
+      font-size: 0.8rem;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+    th, td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid #E5E7EB; }
+    th { background: #F3F4F6; }
+    .section-title { margin: 1.5rem 0 0.5rem; font-size: 1rem; }
+
+    .hint { color: var(--muted); font-size: 0.8rem; }
+    .divider { height: 1px; background: #E5E7EB; margin: 0.75rem 0; }
+    .kv { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+    .kv b { color: var(--text); }
+
+    .mini-chart {
+      background: var(--bg);
+      border: 1px solid #E5E7EB;
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      margin-bottom: 0.25rem;
+      overflow: hidden;
+    }
+    .mini-chart .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .mini-chart svg {
+      width: 100%;
+      height: 160px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>데이터서비스 MVP</h1>
+    <div class="sub">단일 화면 · 로딩부터 시작</div>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="config-block">
+        <h3>유형</h3>
+        <div class="row" style="gap:1rem; margin-bottom:0.25rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;">
+            <input type="radio" name="userType" value="full-access" checked />
+            공공+유료
+          </label>
+          <label style="display:flex;align-items:center;gap:0.4rem;">
+            <input type="radio" name="userType" value="public-only" />
+            공공
+          </label>
+        </div>
+      </div>
+
+      <div class="config-block">
+        <h3>템플릿(스펙)</h3>
+        <label class="sr-only" for="specFile">템플릿(스펙)</label>
+        <select id="specFile" style="width:100%;"></select>
+      </div>
+
+      <div class="config-block" style="margin-bottom:0;">
+        <h3>기능</h3>
+        <div class="row" style="gap:0.75rem;">
+          <select id="featureMode" style="flex:1; min-width:240px;">
+            <option value="correlation">상관(2변수)</option>
+            <option value="ts_single">단일 시계열</option>
+            <option value="ts_multi">다중 시계열</option>
+          </select>
+          <button type="button" id="randomBtn" style="white-space:nowrap;">랜덤</button>
+        </div>
+      </div>
+
+      <div class="row" style="flex-wrap:wrap;">
+        <div class="kv" id="selectionSummary" style="flex:1;min-width:280px;">
+          <div><b>spec</b>: <span id="selSpec">-</span></div>
+          <div><b>x</b>: <span id="selX">-</span></div>
+          <div><b>y</b>: <span id="selY">-</span></div>
+          <div><b>mode</b>: <span id="selMode">-</span></div>
+        </div>
+
+        <div class="row" style="gap:0.5rem; justify-content:flex-end;">
+          <button type="button" class="primary" id="applyBtn">Apply</button>
+          <button type="button" id="revertBtn">Revert</button>
+          <button type="button" id="resetBtn">Reset</button>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:0.5rem;">
+        로딩 단계는 아래 “미리보기 상태”에 표시됩니다. Apply만 서버 호출합니다.
+      </div>
+    </section>
+
+    <section class="preview">
+      <h2 id="previewTitle">미리보기</h2>
+      <div class="meta" id="previewMeta">로딩: 시작…</div>
+      <div id="previewOut"></div>
+    </section>
+  </main>
+  <script>
+    const SPEC_LIST_URL = "/feature-specs";
+    const SERIES_META_URL = "/series-meta";
+    const THEME_ORG = "org-acme";
+    let baseSpec = null;          // loaded from file
+    let draft = null;             // mutable UI state
+    let applied = null;           // last applied state
+    let seriesMeta = [];
+    let seriesMetaByCode = {};
+    let specLabelByFile = {};
+
+    function setPreviewStatus(msg) {
+      const el = document.getElementById("previewMeta");
+      if (el) el.textContent = msg || "";
+    }
+
+    async function loadTheme() {
+      const r = await fetch("/themes/" + encodeURIComponent(THEME_ORG));
+      if (!r.ok) return;
+      const t = await r.json();
+      const tok = t.tokens || {};
+      if (tok.primaryColor) document.documentElement.style.setProperty("--primary", tok.primaryColor);
+      if (tok.backgroundColor) document.documentElement.style.setProperty("--bg", tok.backgroundColor);
+      if (tok.surfaceColor) document.documentElement.style.setProperty("--surface", tok.surfaceColor);
+      if (tok.textColor) document.documentElement.style.setProperty("--text", tok.textColor);
+      if (tok.secondaryColor) document.documentElement.style.setProperty("--muted", tok.secondaryColor);
+      const cr = t.componentRules || {};
+      if (cr.cardRadius != null) document.documentElement.style.setProperty("--radius", cr.cardRadius + "px");
+      if (tok.fontFamily) document.body.style.fontFamily = tok.fontFamily;
+    }
+
+    function showError(msg, detail) {
+      const out = document.getElementById("previewOut");
+      out.innerHTML =
+        "<pre class=\"err\">" +
+        escapeHtml(msg + (detail ? "\n\n" + detail : "")) +
+        "</pre>";
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function buildSeriesLabel(it) {
+      const name = (it.enName || it.koName || "").trim();
+      const unit = (it.unit || "").trim();
+      const parts = [];
+      parts.push(it.code);
+      if (name) parts.push("— " + name);
+      if (unit) parts.push("[" + unit + "]");
+      return parts.join(" ");
+    }
+
+    function getSeriesName(code) {
+      const it = seriesMetaByCode[code];
+      if (!it) return "";
+      return (it.enName || it.koName || "").trim();
+    }
+
+    function currentModeLabel(mode) {
+      if (mode === "correlation") return "상관(2변수)";
+      if (mode === "ts_single") return "단일 시계열";
+      if (mode === "ts_multi") return "다중 시계열";
+      return mode || "-";
+    }
+
+    function computeDynamicTitle(d) {
+      if (!d) return "미리보기";
+      if (d.mode === "correlation") {
+        const xName = getSeriesName(d.xCode) || d.xCode;
+        const yName = getSeriesName(d.yCode) || d.yCode;
+        return `${xName} vs ${yName} 상관 대시보드`;
+      }
+      if (d.mode === "ts_single") {
+        const n = getSeriesName(d.sCode) || d.sCode || "시리즈";
+        return `${n} 시계열`;
+      }
+      const n = (d.mCodes || []).map(c => getSeriesName(c) || c).join(", ");
+      return n ? `${n} 시계열` : "다중 시계열";
+    }
+
+    function updateSelectionSummary() {
+      const specFile = document.getElementById("specFile").value || "-";
+      const specLabel = specLabelByFile[specFile] || specFile;
+      // 닉네임만 보여주기(코드키/파일명 노출 최소화)
+      document.getElementById("selSpec").textContent = specLabel || specFile;
+      document.getElementById("selMode").textContent = currentModeLabel(draft?.mode);
+
+      function nameOnly(code) {
+        if (!code || code === "-") return "-";
+        return getSeriesName(code) || code;
+      }
+
+      // 선택 요약: 모드별로 "보이는 값"을 맞춘다.
+      if (draft?.mode === "correlation") {
+        const x = draft?.xCode || "-";
+        const y = draft?.yCode || "-";
+        document.getElementById("selX").textContent = x !== "-" ? nameOnly(x) : "-";
+        document.getElementById("selY").textContent = y !== "-" ? nameOnly(y) : "-";
+      } else if (draft?.mode === "ts_single") {
+        const s = draft?.sCode || "-";
+        // UI는 x/y 라벨을 쓰지만, 단일 모드에서는 x 영역에 s를 표시한다.
+        document.getElementById("selX").textContent = s !== "-" ? nameOnly(s) : "-";
+        document.getElementById("selY").textContent = "-";
+      } else {
+        const codes = draft?.mCodes || [];
+        if (codes.length === 0) {
+          document.getElementById("selX").textContent = "-";
+        } else {
+          const names = codes.map(c => nameOnly(c));
+          const shown = names.slice(0, 3).join(", ");
+          document.getElementById("selX").textContent = names.length <= 3 ? shown : (shown + " +" + (names.length - 3));
+        }
+        document.getElementById("selY").textContent = "-";
+      }
+
+      // previewTitle은 "이미 렌더된 applied"에 맞춰서 유지(Apply 전에는 드래프트 변경만 반영되지 않게).
+      const titleSource = applied || draft;
+      document.getElementById("previewTitle").textContent = computeDynamicTitle(titleSource);
+    }
+
+    function setMode(mode) {
+      draft.mode = mode;
+      document.getElementById("featureMode").value = mode;
+      updateSelectionSummary();
+    }
+
+    function autoFillCodesForMode() {
+      // X/Y(또는 s/m codes)는 UI에서 직접 선택하지 않으므로, Apply 전에 미리 채워둔다.
+      if (!seriesMeta || seriesMeta.length === 0) return;
+
+      if (draft.mode === "correlation") {
+        if (draft.xCode && draft.yCode && draft.xCode !== draft.yCode) return;
+        const [a, b] = randomPickDistinct(2);
+        draft.xCode = a;
+        draft.yCode = b;
+      } else if (draft.mode === "ts_single") {
+        if (draft.sCode) return;
+        const [a] = randomPickDistinct(1);
+        draft.sCode = a;
+      } else if (draft.mode === "ts_multi") {
+        if (draft.mCodes && draft.mCodes.length) return;
+        const k = Math.max(2, Math.min(5, Math.floor(Math.random() * 4) + 2));
+        draft.mCodes = randomPickDistinct(k);
+      }
+    }
+
+    function readDraftFromUI() {
+      const t = document.querySelector('input[name="userType"]:checked');
+      draft.userId = t ? t.value : "full-access";
+      draft.specFile = document.getElementById("specFile").value;
+      draft.mode = document.getElementById("featureMode").value;
+    }
+
+    function writeDraftToUI() {
+      const v = draft.userId || "full-access";
+      const r = document.querySelector(`input[name="userType"][value="${v}"]`);
+      if (r) r.checked = true;
+      document.getElementById("featureMode").value = draft.mode || "correlation";
+      setMode(draft.mode || "correlation");
+    }
+
+    function randomPickDistinct(n) {
+      const codes = seriesMeta.map(x => x.code);
+      if (codes.length < n) return codes;
+      const picked = new Set();
+      while (picked.size < n) {
+        picked.add(codes[Math.floor(Math.random() * codes.length)]);
+      }
+      return Array.from(picked);
+    }
+
+    function randomizeByMode() {
+      readDraftFromUI();
+      if (draft.mode === "correlation") {
+        const [a, b] = randomPickDistinct(2);
+        draft.xCode = a;
+        draft.yCode = b;
+      } else if (draft.mode === "ts_single") {
+        const [a] = randomPickDistinct(1);
+        draft.sCode = a;
+      } else {
+        const k = Math.max(2, Math.min(5, Math.floor(Math.random() * 4) + 2));
+        draft.mCodes = randomPickDistinct(k);
+      }
+      updateSelectionSummary();
+    }
+
+    async function apply() {
+      readDraftFromUI();
+      const out = document.getElementById("previewOut");
+      out.innerHTML = "<p class=\"hint\">불러오는 중…</p>";
+      try {
+        setPreviewStatus("로딩: 테마 적용 중…");
+        await loadTheme();
+        if (!baseSpec) throw new Error("템플릿 스펙이 로드되지 않았습니다.");
+
+        const specToSend = Object.assign({}, baseSpec);
+        specToSend.specId = baseSpec.specId || "runtime-spec";
+        specToSend.themeId = baseSpec.themeId || "acme-default";
+        specToSend.layout = baseSpec.layout || { cards: ["timeseries"] };
+
+        if (draft.mode === "correlation") {
+          if (!draft.xCode || !draft.yCode) throw new Error("X/Y 코드를 선택하세요.");
+          if (draft.xCode === draft.yCode) throw new Error("X/Y는 서로 달라야 합니다.");
+          specToSend.analysisType = "correlation";
+          specToSend.seriesBindings = { x: draft.xCode, y: draft.yCode };
+          specToSend.title = computeDynamicTitle(draft);
+          setPreviewStatus(`로딩: 상관(2변수) 빌드 요청 중… (${draft.xCode} vs ${draft.yCode})`);
+        } else if (draft.mode === "ts_single") {
+          if (!draft.sCode) throw new Error("시리즈를 선택하세요.");
+          specToSend.analysisType = "timeseries";
+          specToSend.seriesCodes = [draft.sCode];
+          specToSend.title = computeDynamicTitle(draft);
+          setPreviewStatus(`로딩: 단일 시계열 빌드 요청 중… (${draft.sCode})`);
+        } else {
+          if (!draft.mCodes || draft.mCodes.length === 0) throw new Error("다중 시계열 코드를 1개 이상 선택하세요.");
+          specToSend.analysisType = "timeseries";
+          specToSend.seriesCodes = draft.mCodes.slice();
+          specToSend.title = computeDynamicTitle(draft);
+          setPreviewStatus(`로딩: 다중 시계열 빌드 요청 중… (${draft.mCodes.length}개)`);
+        }
+
+        const br = await fetch("/build-feature", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: draft.userId || "full-access", spec: specToSend }),
+        });
+        const text = await br.text();
+        let data;
+        try { data = JSON.parse(text); } catch (e) { throw new Error("응답 파싱 실패: " + text.slice(0, 200)); }
+        if (!br.ok) {
+          showError("요청 실패 (" + br.status + ")", JSON.stringify(data, null, 2));
+          setPreviewStatus(`에러: 요청 실패 (${br.status})`);
+          return;
+        }
+        applied = JSON.parse(JSON.stringify(draft));
+        render(data);
+      } catch (e) {
+        showError(String(e.message || e), "");
+        setPreviewStatus(`에러: ${String(e.message || e)}`);
+      }
+    }
+
+    function revert() {
+      if (!applied) return;
+      draft = JSON.parse(JSON.stringify(applied));
+      writeDraftToUI();
+    }
+
+    function resetToTemplateDefaults() {
+      // 템플릿(스펙)을 "기본값 프리셋"으로 사용한다.
+      const t = document.querySelector('input[name="userType"]:checked');
+      const userId = t ? t.value : (draft?.userId || "full-access");
+      const analysisType = (baseSpec?.analysisType || "").trim();
+      const codes = Array.isArray(baseSpec?.seriesCodes) ? baseSpec.seriesCodes.filter(Boolean) : [];
+      const bindings = (baseSpec && typeof baseSpec.seriesBindings === "object") ? baseSpec.seriesBindings : null;
+
+      // 1) 템플릿이 timeseries면 seriesCodes 길이에 따라 single/multi 결정
+      if (analysisType === "timeseries" && codes.length) {
+        if (codes.length === 1) {
+          draft = { userId, mode: "ts_single", xCode: "", yCode: "", sCode: String(codes[0]), mCodes: [] };
+        } else {
+          draft = { userId, mode: "ts_multi", xCode: "", yCode: "", sCode: "", mCodes: codes.map(String) };
+        }
+      }
+      // 2) 템플릿이 correlation이면 seriesBindings(x/y)로 설정
+      else if (analysisType === "correlation" && bindings && typeof bindings.x === "string" && typeof bindings.y === "string") {
+        draft = { userId, mode: "correlation", xCode: bindings.x, yCode: bindings.y, sCode: "", mCodes: [] };
+      }
+      // 3) 템플릿이 비어있거나 예상 못한 경우: 데모 기본(단일 랜덤)
+      else {
+        draft = { userId, mode: "ts_single", xCode: "", yCode: "", sCode: "", mCodes: [] };
+        autoFillCodesForMode();
+      }
+
+      // 혹시 일부 값이 비어있으면(템플릿 미완) 랜덤으로 보충
+      autoFillCodesForMode();
+      writeDraftToUI(); // setMode()로 selectionSummary 갱신
+    }
+
+    function render(rt) {
+      const title = rt.title || "대시보드";
+      document.getElementById("previewTitle").textContent = title;
+      const cd = rt.canonicalDataset;
+      const comps = rt.components || [];
+      const corr = comps.find(function (c) { return c.type === "correlation-card"; });
+
+      let html = "";
+      const series = (cd && Array.isArray(cd.series)) ? cd.series : [];
+      if (series.length) {
+        html += "<div class=\"cards\">";
+        for (const s of series.slice(0, 6)) {
+          const vals = s.values || [];
+          const last = vals.length ? vals[vals.length - 1] : null;
+          const unit = (cd.units && cd.units[s.name]) ? (" " + cd.units[s.name]) : "";
+          html += "<div class=\"card\"><h3>Latest · " + escapeHtml(String(s.name)) + "</h3><div class=\"val\">" +
+            escapeHtml(last ? String(last.value) : "-") + "</div><div class=\"hint\">" + escapeHtml(unit.trim()) + "</div></div>";
+        }
+        if (corr && corr.props) {
+          html += "<div class=\"card\"><h3>Pearson</h3><div class=\"val\">" + escapeHtml(String(corr.props.pearsonCorrelation)) + "</div></div>";
+        }
+        html += "</div>";
+      }
+
+      if (cd && cd.series && cd.series.length) {
+        // 시계열 미리보기 섹션 "윗부분"에 간단 라인차트 추가(SVG, 외부 라이브러리 없이).
+        const maxSeriesForChart = 3;
+        const showSeries = series.slice(0, maxSeriesForChart);
+        const colors = ["#1E66F5", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6", "#14B8A6"];
+        const maxPoints = 60;
+        const pad = 12;
+        const W = 520;
+        const H = 160;
+
+        let allVals = [];
+        for (const s of showSeries) {
+          const vals = s.values || [];
+          const slice = vals.length > maxPoints ? vals.slice(vals.length - maxPoints) : vals;
+          for (const p of slice) allVals.push(p.value);
+        }
+        const minV = allVals.length ? Math.min.apply(null, allVals) : 0;
+        const maxV = allVals.length ? Math.max.apply(null, allVals) : 1;
+
+        function toX(i, n) {
+          return pad + (W - pad * 2) * (n <= 1 ? 0 : i / (n - 1));
+        }
+        function toY(v) {
+          const denom = (maxV - minV) || 1;
+          const t = (v - minV) / denom;
+          return (H - pad - (H - pad * 2) * t);
+        }
+
+        let legend = "";
+        for (let i = 0; i < showSeries.length; i++) {
+          const s = showSeries[i];
+          const c = colors[i % colors.length];
+          legend +=
+            "<span><span style=\"display:inline-block;width:10px;height:10px;border-radius:2px;background:" + c + ";margin-right:0.35rem;vertical-align:middle\"></span>" +
+            escapeHtml(String(s.name)) + "</span>";
+        }
+
+        let svg = "<svg viewBox=\"0 0 " + W + " " + H + "\" preserveAspectRatio=\"none\">";
+        for (let i = 0; i < showSeries.length; i++) {
+          const s = showSeries[i];
+          const c = colors[i % colors.length];
+          const vals = s.values || [];
+          const slice = vals.length > maxPoints ? vals.slice(vals.length - maxPoints) : vals;
+          const n = slice.length;
+          const points = [];
+          for (let j = 0; j < n; j++) {
+            points.push(toX(j, n) + "," + toY(slice[j].value));
+          }
+          svg += "<polyline fill=\"none\" stroke=\"" + c + "\" stroke-width=\"2\" points=\"" + points.join(" ") + "\" />";
+        }
+        svg += "</svg>";
+
+        html += "<div class=\"mini-chart\"><div class=\"legend\">" + legend + "</div>" + svg + "</div>";
+
+        html += "<h3 class=\"section-title\">시계열 미리보기 (각 시리즈 상위 5행)</h3><table><thead><tr><th>시리즈</th><th>날짜</th><th>값</th></tr></thead><tbody>";
+        cd.series.forEach(function (s) {
+          (s.values || []).slice(0, 5).forEach(function (p) {
+            html += "<tr><td>" + escapeHtml(s.name) + "</td><td>" + escapeHtml(p.date) + "</td><td>" + escapeHtml(String(p.value)) + "</td></tr>";
+          });
+        });
+        html += "</tbody></table>";
+      }
+      // 원본 JSON 전체는 매우 커서(수천~수만 포인트) 브라우저가 멈출 수 있음 → 길이 제한
+      const raw = JSON.stringify(rt, null, 2);
+      const MAX_DEBUG_CHARS = 8000;
+      const clipped = raw.length > MAX_DEBUG_CHARS
+        ? (raw.slice(0, MAX_DEBUG_CHARS) + "\n... (truncated, " + raw.length + " chars total) ...")
+        : raw;
+      html += "<h3 class=\"section-title\">원본 JSON (디버그·일부)</h3><pre style=\"font-size:0.7rem;background:var(--surface);padding:1rem;border-radius:var(--radius);overflow:auto\">" + escapeHtml(clipped) + "</pre>";
+      document.getElementById("previewOut").innerHTML = html;
+
+      const res = rt.resolution ? JSON.stringify(rt.resolution) : "";
+      setPreviewStatus(res ? ("ok · resolution: " + res) : "ok");
+    }
+
+    async function loadSeriesMeta() {
+      const r = await fetch(SERIES_META_URL);
+      if (!r.ok) throw new Error("시리즈 메타 로드 실패: " + r.status);
+      const data = await r.json();
+      const items = (data && Array.isArray(data.series)) ? data.series : [];
+      if (items.length === 0) throw new Error("series_meta.csv에 시리즈가 없습니다.");
+      seriesMeta = items;
+      seriesMetaByCode = {};
+      for (const it of items) seriesMetaByCode[it.code] = it;
+    }
+
+    async function loadSpecList() {
+      const sel = document.getElementById("specFile");
+      sel.innerHTML = "";
+      specLabelByFile = {};
+      const r = await fetch(SPEC_LIST_URL);
+      if (!r.ok) throw new Error("FeatureSpec 목록 로드 실패: " + r.status);
+      const data = await r.json();
+      const files = (data && Array.isArray(data.files)) ? data.files : [];
+      if (files.length === 0) throw new Error("FeatureSpec 파일이 없습니다. data/feature-specs/*.json 확인");
+      for (const f of files) {
+        let label = f;
+        try {
+          const rr = await fetch("/feature-specs/" + encodeURIComponent(f));
+          if (rr.ok) {
+            const s = await rr.json();
+            const title = (s && typeof s.title === "string") ? s.title.trim() : "";
+            if (title) label = title;
+          }
+        } catch (e) {
+          // ignore label fetch errors and fall back to filename
+        }
+        specLabelByFile[f] = label;
+        const opt = document.createElement("option");
+        opt.value = f;
+        opt.textContent = label;
+        sel.appendChild(opt);
+      }
+      // default pick
+      sel.value = files[0];
+      return files[0];
+    }
+
+    async function loadSpecFile(fileName) {
+      const url = "/feature-specs/" + encodeURIComponent(fileName);
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("FeatureSpec 로드 실패: " + r.status);
+      baseSpec = await r.json();
+    }
+
+    function syncDraftFromTemplateIfEmpty() {
+      if (!draft.xCode && baseSpec?.seriesBindings?.x) draft.xCode = baseSpec.seriesBindings.x;
+      if (!draft.yCode && baseSpec?.seriesBindings?.y) draft.yCode = baseSpec.seriesBindings.y;
+      if (!draft.sCode) draft.sCode = draft.xCode || seriesMeta[0]?.code;
+      if (!draft.mCodes || draft.mCodes.length === 0) draft.mCodes = [draft.xCode, draft.yCode].filter(Boolean);
+    }
+
+    document.getElementById("applyBtn").addEventListener("click", apply);
+    document.getElementById("revertBtn").addEventListener("click", revert);
+    document.getElementById("resetBtn").addEventListener("click", resetToTemplateDefaults);
+    document.getElementById("randomBtn").addEventListener("click", randomizeByMode);
+    document.getElementById("featureMode").addEventListener("change", () => {
+      readDraftFromUI();
+      setMode(document.getElementById("featureMode").value);
+      autoFillCodesForMode();
+      updateSelectionSummary();
+    });
+    document.querySelectorAll('input[name="userType"]').forEach((el) => {
+      el.addEventListener("change", () => { readDraftFromUI(); updateSelectionSummary(); });
+    });
+    async function onSpecChanged(fileName) {
+      try {
+        if (!fileName) return;
+        document.getElementById("specFile").value = fileName; // keep hidden select in sync
+        await loadSpecFile(fileName);
+        resetToTemplateDefaults();
+        updateSelectionSummary();
+      } catch (err) {
+        showError(String(err.message || err), "");
+      }
+    }
+    document.getElementById("specFile").addEventListener("change", async (e) => {
+      await onSpecChanged(e.target.value);
+    });
+
+    (async () => {
+      try {
+        setPreviewStatus("로딩: 시작…");
+        setPreviewStatus("로딩: 테마 불러오는 중…");
+        await loadTheme();
+
+        setPreviewStatus("로딩: 시리즈 메타 불러오는 중…");
+        await loadSeriesMeta();
+
+        setPreviewStatus("로딩: 템플릿 목록 불러오는 중…");
+        const first = await loadSpecList();
+
+        setPreviewStatus("로딩: 템플릿 불러오는 중…");
+        await loadSpecFile(first);
+
+        // 로딩 중에도 UI가 "비어 보이지" 않도록, draft를 먼저 세팅해 화면에 mode을 즉시 표시한다.
+        draft = { userId: "full-access", mode: "ts_single", xCode: "", yCode: "", sCode: "", mCodes: [] };
+        applied = null;
+        writeDraftToUI();
+        updateSelectionSummary();
+
+        setPreviewStatus("로딩: 기본값(단일 시계열 랜덤) 설정 중…");
+        resetToTemplateDefaults();
+
+        // 페이지 로딩 직후 1회만 서버 호출해서 “Apply 전에도” 단일차트 미리보기 표시
+        await apply();
+      } catch (err) {
+        showError(String(err.message || err), "");
+        setPreviewStatus(`에러: ${String(err.message || err)}`);
+      }
+    })();
+  </script>
+</body>
+</html>

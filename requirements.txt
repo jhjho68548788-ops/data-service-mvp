@@ -1,0 +1,3 @@
+# MVP server uses Python standard library only (http.server, json, csv, etc.)
+# No third-party packages required.
+# Python >= 3.8 recommended.

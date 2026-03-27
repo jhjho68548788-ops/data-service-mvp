@@ -1,0 +1,15 @@
+{
+  "specId": "feature-corr-ecos-steel-v1",
+  "title": "기준금리 vs 철강 가격 상관 대시보드",
+  "requestedAt": "2026-03-26T00:00:00Z",
+  "analysisType": "correlation",
+  "seriesBindings": {
+    "x": "ECOS.POLICY.RATE_BASE",
+    "y": "WS.MKT.STEEL_HRC_IDX"
+  },
+  "layout": {
+    "grid": "2-col",
+    "cards": ["kpi", "timeseries", "correlation-matrix"]
+  },
+  "themeId": "acme-default"
+}

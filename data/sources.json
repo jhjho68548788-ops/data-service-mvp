@@ -1,0 +1,29 @@
+[
+  {
+    "sourceId": "bank-ecos",
+    "type": "public",
+    "displayName": "한국은행 ECOS (CSV 더미)",
+    "connector": {
+      "kind": "csv",
+      "seriesCode": "ECOS.POLICY.RATE_BASE"
+    },
+    "ratePolicy": { "maxCallsPerHour": 120 },
+    "normalizationProfileId": "macro-index-v1"
+  },
+  {
+    "sourceId": "vendor-steel",
+    "type": "vendor",
+    "displayName": "Worldsteel (CSV 더미)",
+    "connector": {
+      "kind": "csv",
+      "seriesCode": "WS.MKT.STEEL_HRC_IDX"
+    },
+    "licensePolicy": {
+      "quotaCallsPerMonth": 5000,
+      "apiKeyValidityDays": 30,
+      "estimatedMonthlyCost": 1200
+    },
+    "ratePolicy": { "maxCallsPerHour": 30 },
+    "normalizationProfileId": "steel-index-v1"
+  }
+]

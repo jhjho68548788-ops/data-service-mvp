@@ -1,0 +1,16 @@
+{
+  "specId": "feature-ts-multi-default-v1",
+  "title": "다중시계열",
+  "requestedAt": "2026-03-26T00:00:00Z",
+  "analysisType": "timeseries",
+  "seriesCodes": [
+    "ECOS.POLICY.RATE_BASE",
+    "WS.MKT.STEEL_HRC_IDX",
+    "LME.COM.AL_SPOT"
+  ],
+  "layout": {
+    "grid": "2-col",
+    "cards": ["timeseries"]
+  },
+  "themeId": "acme-default"
+}

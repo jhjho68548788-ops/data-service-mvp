@@ -1,0 +1,16 @@
+{
+  "orgId": "org-acme",
+  "themeId": "acme-default",
+  "tokens": {
+    "fontFamily": "Noto Sans KR, Arial, sans-serif",
+    "primaryColor": "#1E66F5",
+    "secondaryColor": "#6B7280",
+    "backgroundColor": "#FFFFFF",
+    "surfaceColor": "#F9FAFB",
+    "textColor": "#111827"
+  },
+  "componentRules": {
+    "cardRadius": 12,
+    "chartAccent": "primary"
+  }
+}

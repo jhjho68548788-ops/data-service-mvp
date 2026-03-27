@@ -1,0 +1,16 @@
+{
+  "description": "시리즈 code의 첫 구간(도메인) → 권한·정책 단위 sourceId. 데모용 매핑.",
+  "domainToSource": {
+    "ECOS": "bank-ecos",
+    "BOK": "bank-ecos",
+    "FRED": "bank-ecos",
+    "WB": "bank-ecos",
+    "KIS": "bank-ecos",
+    "MOIS": "bank-ecos",
+    "KEPCO": "bank-ecos",
+    "WS": "vendor-steel",
+    "LME": "vendor-steel",
+    "SGX": "vendor-steel",
+    "PLATTS": "vendor-steel"
+  }
+}
